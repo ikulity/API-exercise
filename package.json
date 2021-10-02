@@ -1,0 +1,22 @@
+{
+  "name": "api-exercise",
+  "version": "1.0.0",
+  "description": "API exercise done with Node.js and Express. API documents will be included",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikulity/API-exercise.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ikulity/API-exercise/issues"
+  },
+  "homepage": "https://github.com/ikulity/API-exercise#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

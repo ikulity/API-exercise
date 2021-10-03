@@ -7,9 +7,10 @@ const { v4: uuidv4 } = require('uuid');
 const BasicStrategy = require('passport-http').BasicStrategy;
 
 
-
-
 app.use(express.json());
+app.use(express.urlencoded({
+    extended: true
+  }));
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
@@ -52,17 +53,17 @@ app.get('/posts', (req, res) => {
 app.post('/user', (req, res) => {
     //rekisteröitymisessö tarkastatetaan onko jo olemassa kyseisellä
     //nimellä ja jos ei ole niin palautetaan avain
-    console.log('originaali salasana ' + req.body.password);
+    console.log('original password ' + req.body.password);
     const salt = bcrypt.genSaltSync(6);
-    console.log('suola ' + salt);
+    console.log('salt ' + salt);
     const hashedPassword = bcrypt.hashSync(req.body.password, salt)
-    console.log('hashattu salasana');
+    console.log('hashed password');
     console.log(hashedPassword);
 
     const newUser = { 
         username: req.body.username,
         password: hashedPassword,
-        id: uuidv4()
+        email: req.body.email,
     }
     userDb.push(newUser);
     res.sendStatus(201);
@@ -71,7 +72,6 @@ app.post('/user', (req, res) => {
 const jwt = require('jsonwebtoken');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const jwtSecretKey = "mySecretKey";
 const secrets = require('./secrets.json');
 
 const options = {
@@ -90,11 +90,11 @@ app.post('/user/login', passport.authenticate('basic', {session: false}), (req, 
     //otetaan vastaan annetut kirjautumis tiedot ja jos ne vastaavat
     //tietokannassa olevia niin annetaan authorisaatio tehdä tiettyjä toimintoja
     //aka palauteteaan avain 
-    const token = jwt.sign({foo: "bar"}, jwtSecretKey);
+    const token = jwt.sign({foo: "bar"}, secrets.jwtSecretKey);
     res.json({ token: token})
 })
 
-app.post('/post', (req, res) => {
+app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => {
     // tekee posti post database listaan jossa käyttäjän pitää täyttää
     //tarvittavat tiedot
 })
@@ -105,8 +105,3 @@ app.listen(port, () => {
 });
 
 
-
-app.get('/jwtProtectedResource', passport.authenticate('jwt', {session: false}), (req, res) => {
-
-    res.send("YOu succesdulkly accessed JWT protected API resources");
-})

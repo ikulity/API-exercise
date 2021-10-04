@@ -1,8 +1,11 @@
+const { v4: uuidv4 } = require('uuid');
+
 let users = [];
 
 let posts = [
     {
         id: 25280,
+        ownerId: 11,
         title: "string",
         description: "string",
         category: "cars",
@@ -17,6 +20,7 @@ let posts = [
       },
       {
         id: 15690,
+        ownerId: 11,
         title: "string",
         description: "string",
         category: "toys",
@@ -31,6 +35,7 @@ let posts = [
       },
       {
         id: 23250,
+        ownerId: 18,
         title: "string",
         description: "string",
         category: "toys",
@@ -47,10 +52,18 @@ let posts = [
 
 
 module.exports = {
+    addUser: (user) => {
+      user.id = uuidv4();
+      users.push(user);
+    },
     // look for a user if it exists
     getUserByName: (username) => users.find(user => user.username == username),
 
-    // search posts by criteria
+    addPost: (post) => {
+      post.id = uuidv4();
+      posts.push(post);
+    },
+    // search posts
     getPostById: (postId) => posts.find(post => post.id == postId),
 
     getPostByCriteria: (criteria) => posts.filter(criteriaCheck(criteria)),
@@ -59,7 +72,16 @@ module.exports = {
     sortPostsByDate: (list) => list.sort((a, b) => {
         console.log(new Date(a.date) + "  --  " +  new Date(b.date))
         return new Date(b.date) - new Date(a.date);
-    })
+    }),
+
+    deletePostById: (postId) => {
+      for (let i = 0; i < posts.length; i++) {
+        if (posts[i].id == postId) {
+          posts.splice(i, 1);
+          break;
+        }
+      }
+    }
 }
 
 const criteriaCheck = (criteria) => {
@@ -71,7 +93,7 @@ const criteriaCheck = (criteria) => {
             console.log("criteria[" + prop + "] = " + criteria[prop] + ", post[" + prop + "] = " + post[prop]);
             if (post[prop] != criteria[prop]) {
                 isValid = false;
-                //break;
+                break;
             }
         }
         isValid ? console.log("Valid post found!") : console.log("POST NOT FOUND >:(");

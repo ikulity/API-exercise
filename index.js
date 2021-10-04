@@ -120,8 +120,19 @@ app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => 
     res.sendStatus(201)
 })
 
-app.patch('/posts/{postId}', passport.authenticate('jwt', {session: false}), (req, res) => {
-    // use database function? to update post. properties to update may vary...
+app.patch('/posts/:postId', passport.authenticate('jwt', {session: false}), (req, res) => {
+    const post = database.getPostById(req.params.postId)
+    console.log("Params postID: " + req.params.postId + " - post: " + JSON.stringify(post))
+    if (post.ownerId == req.user.id) {
+        let updatedProps = {
+            title: "uusi title jee",
+            description: "uusi description",
+        }
+        database.updatePostById(post.id, updatedProps)
+        res.status(200).send("Post updated successfully");
+    } else {
+        res.sendStatus(401);
+    }
 });
 
 app.delete('/posts/:postId', passport.authenticate('jwt', {session: false}), (req, res) => {

@@ -1,7 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 
 let users = [];
-
 let posts = [
     {
         id: 25280,
@@ -55,6 +54,9 @@ module.exports = {
     addUser: (user) => {
       user.id = uuidv4();
       users.push(user);
+    },
+    getUsers: () => {
+      return users;
     },
     // look for a user if it exists
     getUserByName: (username) => users.find(user => user.username == username),

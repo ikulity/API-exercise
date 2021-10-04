@@ -60,8 +60,8 @@ module.exports = {
     getUserByName: (username) => users.find(user => user.username == username),
 
     addPost: (post) => {
-      post.id = uuidv4();
-      posts.push(post);
+      const postWithId = { id: uuidv4(), ...post};
+      posts.push(postWithId);
     },
     // search posts
     getPostById: (postId) => posts.find(post => post.id == postId),
@@ -73,6 +73,14 @@ module.exports = {
         console.log(new Date(a.date) + "  --  " +  new Date(b.date))
         return new Date(b.date) - new Date(a.date);
     }),
+
+    updatePostById: (postId, updatedProps) => {
+      const post = module.exports.getPostById(postId);
+      const newPost = {...post, ...updatedProps};
+      console.log(JSON.stringify(newPost));
+      module.exports.deletePostById(postId);
+      posts.push(newPost);
+    },
 
     deletePostById: (postId) => {
       for (let i = 0; i < posts.length; i++) {

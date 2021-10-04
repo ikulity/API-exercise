@@ -32,11 +32,20 @@ passport.use(new BasicStrategy(
 
 passport.use(new JwtStrategy(options, (payload, done) => {
     // Check if user exists
-    if (database.getUserByName(payload.username))
+    const user = database.getUserByName(payload.username);
+    if (user)
         done(null, user);
     else
         done(null, false);
 }));
+
+const checkIfOwner = (req, res, next) => {
+    const post = database.getPostById(req.params.postId)
+    if (post.ownerId == req.user.id) {
+        next();
+    } else
+        res.sendStatus(401);
+};
 
 // User Signup
 app.post('/signup', (req, res) => {
@@ -59,7 +68,7 @@ app.post('/signup', (req, res) => {
 })
 
 // User Login
-app.post('/user/login', passport.authenticate('basic', {session: false}), (req, res) => {
+app.post('/login', passport.authenticate('basic', {session: false}), (req, res) => {
     //otetaan vastaan annetut kirjautumis tiedot ja jos ne vastaavat
     //tietokannassa olevia niin annetaan authorisaatio tehdä tiettyjä toimintoja
     //aka palauteteaan avain
@@ -100,27 +109,19 @@ app.get('/posts', (req, res) => {
         res.json(database.sortPostsByDate(posts));
     else
         res.json(posts);
-})
+});
 
 // Update a Post
-app.patch('/posts/:postId', passport.authenticate('jwt', {session: false}), (req, res) => {
-    const post = database.getPostById(req.params.postId)
-    if (post.ownerId == req.user.id) {
-        const updatedProps = req.body;
-        database.updatePostById(post.id, updatedProps)
-        res.status(200).send("Post updated successfully");
-    } else
-        res.sendStatus(401);
+app.patch('/posts/:postId', [passport.authenticate('jwt', {session: false}), checkIfOwner], (req, res) => {
+    const updatedProps = req.body;
+    database.updatePostById(req.params.postId, updatedProps);
+    res.status(200).send("Post updated successfully");
 });
 
 // Delete a Post
-app.delete('/posts/:postId', passport.authenticate('jwt', {session: false}), (req, res) => {
-    const post = database.getPostById(req.params.postId)
-    if (post.ownerId == req.user.id) {
-        database.deletePostById(post.id);
-        res.status(200).send("Post deleted successfully");
-    } else
-        res.sendStatus(401);
+app.delete('/posts/:postId', [passport.authenticate('jwt', {session: false}), checkIfOwner], (req, res) => {
+    database.deletePostById(req.params.postId);
+    res.status(200).send("Post deleted successfully");
 });
 
 // Getter for all users...

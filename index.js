@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const BasicStrategy = require('passport-http').BasicStrategy;
 
-
+const database = require('./database.js')
 
 
 app.use(express.json());
@@ -30,7 +30,7 @@ passport.use(new BasicStrategy(
             }
             return false;
         });
-        
+        console.log(searchResult)
         //((username === user.username) && (password === user.password))})
         if(searchResult != undefined) {
             done(null, searchResult);
@@ -46,7 +46,20 @@ app.get('/posts', (req, res) => {
     //jos ei anna kaikkia kriteereitä etsitään default kriteereillä 
     //ja jos ei anna kriteereitä olenkaan niin palautetaan kaikki
 
+    const criterias = {
+        category: req.query.category,
+        location: req.query.location,
+        username: req.query.username,
+        sortByDate: req.query.sortByDate,
+    }
+    console.log("criterias: " + JSON.stringify(criterias));
+    let posts = database.getPostByCriteria(criterias);
 
+    if (req.query.sortByDate == "true") {
+        res.json(database.sortPostsByDate(posts));
+    } else {
+        res.json(posts);
+    }
 })
 
 app.post('/user', (req, res) => {
@@ -71,7 +84,6 @@ app.post('/user', (req, res) => {
 const jwt = require('jsonwebtoken');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const jwtSecretKey = "mySecretKey";
 const secrets = require('./secrets.json');
 
 const options = {
@@ -90,7 +102,7 @@ app.post('/user/login', passport.authenticate('basic', {session: false}), (req, 
     //otetaan vastaan annetut kirjautumis tiedot ja jos ne vastaavat
     //tietokannassa olevia niin annetaan authorisaatio tehdä tiettyjä toimintoja
     //aka palauteteaan avain 
-    const token = jwt.sign({foo: "bar"}, jwtSecretKey);
+    const token = jwt.sign({foo: "bar"}, secrets.jwtSignKey);
     res.json({ token: token})
 })
 
@@ -99,14 +111,6 @@ app.post('/post', (req, res) => {
     //tarvittavat tiedot
 })
 
-
 app.listen(port, () => {
     console.log(`App running at http://localhost:${port}`)
 });
-
-
-
-app.get('/jwtProtectedResource', passport.authenticate('jwt', {session: false}), (req, res) => {
-
-    res.send("YOu succesdulkly accessed JWT protected API resources");
-})

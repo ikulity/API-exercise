@@ -1,0 +1,143 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/post.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "JSON Schema for Posts",
+    "default": {},
+    "examples": [
+        {
+            "title": "string",
+            "description": "string",
+            "category": "string",
+            "location": "helsinki",
+            "images": [
+                "string"
+            ],
+            "price": 0,
+            "deliveryType": "pickup",
+            "contactInfo": "Jukka, 05049569213"
+        }
+    ],
+    "required": [
+        "title",
+        "description",
+        "category",
+        "location",
+        "images",
+        "price",
+        "deliveryType",
+        "contactInfo"
+    ],
+    "properties": {
+        "title": {
+            "$id": "#/properties/title",
+            "type": "string",
+            "minLength": 3, 
+            "maxLength": 24,
+            "title": "The title schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "string"
+            ]
+        },
+        "description": {
+            "$id": "#/properties/description",
+            "type": "string",
+            "minLength": 1, 
+            "maxLength": 420,
+            "title": "The description schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "string"
+            ]
+        },
+        "category": {
+            "$id": "#/properties/category",
+            "type": "string",
+            "minLength": 3, 
+            "maxLength": 24,
+            "title": "The category schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "string"
+            ]
+        },
+        "location": {
+            "$id": "#/properties/location",
+            "type": "string",
+            "minLength": 3, 
+            "maxLength": 24,
+            "title": "The location schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "helsinki"
+            ]
+        },
+        "images": {
+            "$id": "#/properties/images",
+            "type": "array",
+            "title": "The images schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    "string"
+                ]
+            ],
+            "items": {
+                "$id": "#/properties/images/items",
+                "anyOf": [
+                    {
+                        "$id": "#/properties/images/items/anyOf/0",
+                        "type": "string",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "string"
+                        ]
+                    }
+                ]
+            }
+        },
+        "price": {
+            "$id": "#/properties/price",
+            "type": "integer",
+            "title": "The price schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                0
+            ]
+        },
+        "deliveryType": {
+            "$id": "#/properties/deliveryType",
+            "type": "string",
+            "minLength": 1, 
+            "maxLength": 24,
+            "title": "The deliveryType schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "pickup"
+            ]
+        },
+        "contactInfo": {
+            "$id": "#/properties/contactInfo",
+            "type": "string",
+            "minLength": 1, 
+            "maxLength": 420,
+            "title": "The contactInfo schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Jukka, 05049569213"
+            ]
+        }
+    }
+}

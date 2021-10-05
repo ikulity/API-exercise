@@ -2,6 +2,13 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+
+const Ajv = require('ajv');
+const ajv = new Ajv();
+const postSchema = require('./schemas/post.schema.json');
+const userSchema = require('./schemas/user.schema.json');
+const validatePost = ajv.compile(postSchema);
+const validateUser = ajv.compile(userSchema);
 // Passport
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
@@ -23,7 +30,7 @@ app.use(express.json());
 passport.use(new BasicStrategy(
     (username, password, done) => {
         const user = database.getUserByName(username)
-        if(bcrypt.compareSync(password, user.password))
+        if(user && bcrypt.compareSync(password, user.password))
             done(null, user);
         else
             done(null, false);
@@ -51,6 +58,11 @@ const checkIfOwner = (req, res, next) => {
 app.post('/signup', (req, res) => {
     //rekisteröitymisessö tarkastatetaan onko jo olemassa kyseisellä
     //nimellä ja jos ei ole niin palautetaan avain
+    const valid = validateUser(req.body);
+    if (!valid) {
+        res.sendStatus(400);
+        return;
+    }
     if (database.getUserByName(req.body.username)) {
         res.status(409).send("User already exists");
         return;
@@ -79,6 +91,11 @@ app.post('/login', passport.authenticate('basic', {session: false}), (req, res) 
 
 // Create a new Post
 app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => {
+    const valid = validatePost(req.body);
+    if (!valid) {
+        res.sendStatus(400);
+        return;
+    }
     const newPost = {
         ownerId: req.user.id,
         title: req.body.title,

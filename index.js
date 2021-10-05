@@ -3,71 +3,7 @@ const app = express();
 const port = 3000;
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
 const BasicStrategy = require('passport-http').BasicStrategy;
-
-
-app.use(express.json());
-app.use(express.urlencoded({
-    extended: true
-  }));
-
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
-
-
-let userDb = [];
-
-passport.use(new BasicStrategy(
-    (username, password, done) => {
-        console.log('Basic Strategy params, username ' + username + " , password " + password);
-        
-        const searchResult = userDb.find(user => {
-            if(user.username === username) {
-                if(bcrypt.compareSync(password, user.password)) {
-                    return true;
-                }
-            }
-            return false;
-        });
-        
-        //((username === user.username) && (password === user.password))})
-        if(searchResult != undefined) {
-            done(null, searchResult);
-        } else {
-            done(null, false);
-        }
-    }
-));
-
-
-app.get('/posts', (req, res) => {
-    //hakee postit databaseta tietyillä hakukriteereillä ja
-    //jos ei anna kaikkia kriteereitä etsitään default kriteereillä 
-    //ja jos ei anna kriteereitä olenkaan niin palautetaan kaikki
-
-
-})
-
-app.post('/user', (req, res) => {
-    //rekisteröitymisessö tarkastatetaan onko jo olemassa kyseisellä
-    //nimellä ja jos ei ole niin palautetaan avain
-    console.log('original password ' + req.body.password);
-    const salt = bcrypt.genSaltSync(6);
-    console.log('salt ' + salt);
-    const hashedPassword = bcrypt.hashSync(req.body.password, salt)
-    console.log('hashed password');
-    console.log(hashedPassword);
-
-    const newUser = { 
-        username: req.body.username,
-        password: hashedPassword,
-        email: req.body.email,
-    }
-    userDb.push(newUser);
-    res.sendStatus(201);
-})
 
 const jwt = require('jsonwebtoken');
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -79,29 +15,130 @@ const options = {
     secretOrKey: secrets.jwtSignKey
 };
 
-passport.use(new JwtStrategy(options, (payload, done) => {
-    //tarkistus onko käyttäjä olemassa 
-    //(aka pystyykö esim poistamisen yhteydessä tämä käyttäjä tekemään poiston (onko omistaja))
-    done(null, {});
+const database = require('./database.js')
 
+
+app.use(express.json());
+app.use(express.urlencoded({
+    extended: true
+  }));
+
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+passport.use(new BasicStrategy(
+    (username, password, done) => {
+        console.log('Basic Strategy params, username ' + username + " , password " + password);
+
+        let isValid = false;
+        const user = database.getUserByName(username)
+        if(bcrypt.compareSync(password, user.password))
+            isValid = true;
+
+        if(isValid) {
+            done(null, user);
+        } else {
+            done(null, false);
+        }
+    }
+));
+
+app.get('/posts', (req, res) => {
+    //hakee postit databaseta tietyillä hakukriteereillä ja
+    //jos ei anna kaikkia kriteereitä etsitään default kriteereillä 
+    //ja jos ei anna kriteereitä olenkaan niin palautetaan kaikki
+
+    const criterias = {
+        category: req.query.category,
+        location: req.query.location,
+        ownerId: req.query.ownerId,
+        sortByDate: req.query.sortByDate,
+    }
+    let posts = database.getPostByCriteria(criterias);
+
+    if (req.query.sortByDate == "true") {
+        res.json(database.sortPostsByDate(posts));
+    } else {
+        res.json(posts);
+    }
+})
+
+app.post('/signup', (req, res) => {
+    //rekisteröitymisessö tarkastatetaan onko jo olemassa kyseisellä
+    //nimellä ja jos ei ole niin palautetaan avain
+    console.log('original password ' + req.body.password);
+    const salt = bcrypt.genSaltSync(6);
+    console.log('salt ' + salt);
+    const hashedPassword = bcrypt.hashSync(req.body.password, salt)
+    console.log('hashed password');
+    console.log(hashedPassword);
+
+    const newUser = { 
+        username: req.body.username,
+        password: hashedPassword
+    }
+    database.addUser(newUser);
+    res.sendStatus(201);
+})
+
+passport.use(new JwtStrategy(options, (payload, done) => {
+    //tarkistus onko käyttäjä olemassa
+    console.log("JWT PAYLOAD: " + JSON.stringify(payload))
+    const user = database.getUserByName(payload.username);
+    if (user)
+        done(null, user);
+    else
+        done(null, false);
 }));
 
 app.post('/user/login', passport.authenticate('basic', {session: false}), (req, res) => {
     //otetaan vastaan annetut kirjautumis tiedot ja jos ne vastaavat
     //tietokannassa olevia niin annetaan authorisaatio tehdä tiettyjä toimintoja
-    //aka palauteteaan avain 
-    const token = jwt.sign({foo: "bar"}, secrets.jwtSecretKey);
+    //aka palauteteaan avain
+    console.log("User payload: " + JSON.stringify(req.user))
+    const token = jwt.sign(req.user, secrets.jwtSignKey);
     res.json({ token: token})
 })
 
 app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => {
     // tekee posti post database listaan jossa käyttäjän pitää täyttää
-    //tarvittavat tiedot
+    //tarvittavat tiedotc
+    const username = req.user.username;
+    console.log("Username from payload: " + username);
+
+    const newPost = {
+        ownerId: req.user.id,
+        title: req.body.title,
+        description: req.body.description,
+        category: req.body.category,
+        location: req.body.location,
+        images: req.body.images,
+        price: req.body.price,
+        date: req.body.date,
+        deliveryType: req.body.deliveryType,
+        contactInfo: req.body.contactInfo,
+    }
+    database.addPost(newPost);
+    res.sendStatus(201)
 })
+
+app.patch('/posts/{postId}', passport.authenticate('jwt', {session: false}), (req, res) => {
+    // use database function? to update post. properties to update may vary...
+});
+
+app.delete('/posts/:postId', passport.authenticate('jwt', {session: false}), (req, res) => {
+    // get post by id and then check if owner matches
+    const post = database.getPostById(req.params.postId)
+    if (post.ownerId == req.user.id) {
+        database.deletePostById(post.id);
+        res.status(200).send("Post deleted successfully");
+    } else {
+        res.sendStatus(401);
+    }
+});
 
 
 app.listen(port, () => {
     console.log(`App running at http://localhost:${port}`)
 });
-
-

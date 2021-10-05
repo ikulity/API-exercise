@@ -28,6 +28,9 @@ const database = require('./database.js')
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({
+    extended: true
+  }));
 
 passport.use(new BasicStrategy(
     (username, password, done) => {

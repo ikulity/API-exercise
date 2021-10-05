@@ -3,12 +3,14 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+// Validation
 const Ajv = require('ajv');
 const ajv = new Ajv();
 const postSchema = require('./schemas/post.schema.json');
 const userSchema = require('./schemas/user.schema.json');
 const validatePost = ajv.compile(postSchema);
 const validateUser = ajv.compile(userSchema);
+
 // Passport
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
@@ -133,6 +135,7 @@ app.patch('/posts/:postId', [passport.authenticate('jwt', {session: false}), che
     const updatedProps = req.body;
     database.updatePostById(req.params.postId, updatedProps);
     res.status(200).send("Post updated successfully");
+    // Respond with updated post??
 });
 
 // Delete a Post

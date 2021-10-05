@@ -1,10 +1,16 @@
 const { v4: uuidv4 } = require('uuid');
 
-let users = [];
+let users = [
+  {
+    id: '122675',
+    username: 'krisu',
+    password: '$2a$06$qTZfR8O4zk6CpgdS2/cOg.l5ueMnbG9IPkHHnic5DoJOTO0I/1c/S'
+  }
+];
 let posts = [
     {
-        id: 25280,
-        ownerId: 11,
+        id: "25280",
+        ownerId: "11",
         title: "string",
         description: "string",
         category: "cars",
@@ -18,8 +24,8 @@ let posts = [
         contactInfo: "Krisu, 04569569823"
       },
       {
-        id: 15690,
-        ownerId: 11,
+        id: "15690",
+        ownerId: "11",
         title: "string",
         description: "string",
         category: "toys",
@@ -33,8 +39,8 @@ let posts = [
         contactInfo: "Jukka, 05040569211"
       },
       {
-        id: 23250,
-        ownerId: 18,
+        id: "23250",
+        ownerId: "18",
         title: "string",
         description: "string",
         category: "toys",

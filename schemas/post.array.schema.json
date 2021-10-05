@@ -1,0 +1,180 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "array",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": [],
+    "examples": [
+        [
+            {
+                "id": "65fcc959-2c2f-4f85-a4eb-1b8f2d2142d0",
+                "ownerId": "28ffbd31-7472-4e63-b96f-adee5462ce6a",
+                "title": "jotain",
+                "description": "kuvausta",
+                "category": "pets",
+                "location": "Oulu",
+                "images": [],
+                "price": 250,
+                "date": "1633424555116",
+                "deliveryType": "pickup",
+                "contactInfo": "Markku, puhnro"
+            }
+        ]
+    ],
+    "items": {
+        "$id": "#/items",
+        "anyOf": [
+            {
+                "$id": "#/items/anyOf/0",
+                "type": "object",
+                "title": "The first anyOf schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": {},
+                "examples": [
+                    {
+                        "id": "65fcc959-2c2f-4f85-a4eb-1b8f2d2142d0",
+                        "ownerId": "28ffbd31-7472-4e63-b96f-adee5462ce6a",
+                        "title": "jotain",
+                        "description": "kuvausta",
+                        "category": "pets",
+                        "location": "Oulu",
+                        "images": [],
+                        "price": 250,
+                        "date": "1633424555116",
+                        "deliveryType": "pickup",
+                        "contactInfo": "Markku, puhnro"
+                    }
+                ],
+                "required": [
+                    "id",
+                    "ownerId",
+                    "title",
+                    "description",
+                    "category",
+                    "location",
+                    "images",
+                    "price",
+                    "date",
+                    "deliveryType",
+                    "contactInfo"
+                ],
+                "properties": {
+                    "id": {
+                        "$id": "#/items/anyOf/0/properties/id",
+                        "type": "string",
+                        "title": "The id schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "65fcc959-2c2f-4f85-a4eb-1b8f2d2142d0"
+                        ]
+                    },
+                    "ownerId": {
+                        "$id": "#/items/anyOf/0/properties/ownerId",
+                        "type": "string",
+                        "title": "The ownerId schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "28ffbd31-7472-4e63-b96f-adee5462ce6a"
+                        ]
+                    },
+                    "title": {
+                        "$id": "#/items/anyOf/0/properties/title",
+                        "type": "string",
+                        "title": "The title schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "jotain"
+                        ]
+                    },
+                    "description": {
+                        "$id": "#/items/anyOf/0/properties/description",
+                        "type": "string",
+                        "title": "The description schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "kuvausta"
+                        ]
+                    },
+                    "category": {
+                        "$id": "#/items/anyOf/0/properties/category",
+                        "type": "string",
+                        "title": "The category schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "pets"
+                        ]
+                    },
+                    "location": {
+                        "$id": "#/items/anyOf/0/properties/location",
+                        "type": "string",
+                        "title": "The location schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "Oulu"
+                        ]
+                    },
+                    "images": {
+                        "$id": "#/items/anyOf/0/properties/images",
+                        "type": "array",
+                        "title": "The images schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": [],
+                        "examples": [
+                            []
+                        ],
+                        "items": {
+                            "$id": "#/items/anyOf/0/properties/images/items"
+                        }
+                    },
+                    "price": {
+                        "$id": "#/items/anyOf/0/properties/price",
+                        "type": "integer",
+                        "title": "The price schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": 0,
+                        "examples": [
+                            250
+                        ]
+                    },
+                    "date": {
+                        "$id": "#/items/anyOf/0/properties/date",
+                        "type": "string",
+                        "title": "The date schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": 0,
+                        "examples": [
+                            "1633424555116"
+                        ]
+                    },
+                    "deliveryType": {
+                        "$id": "#/items/anyOf/0/properties/deliveryType",
+                        "type": "string",
+                        "title": "The deliveryType schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "pickup"
+                        ]
+                    },
+                    "contactInfo": {
+                        "$id": "#/items/anyOf/0/properties/contactInfo",
+                        "type": "string",
+                        "title": "The contactInfo schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "Markku, puhnro"
+                        ]
+                    }
+                }            
+            }
+        ]
+    }
+}

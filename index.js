@@ -7,8 +7,10 @@ const Ajv = require('ajv');
 const ajv = new Ajv();
 const postSchema = require('./schemas/post.schema.json');
 const userSchema = require('./schemas/user.schema.json');
+const postUpdateSchema = require('./schemas/post.update.schema.json');
 const validatePost = ajv.compile(postSchema);
 const validateUser = ajv.compile(userSchema);
+const validateUpdate = ajv.compile(postUpdateSchema);
 // Passport
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
@@ -51,10 +53,15 @@ passport.use(new JwtStrategy(options, (payload, done) => {
 
 const checkIfOwner = (req, res, next) => {
     const post = database.getPostById(req.params.postId)
-    if (post.ownerId == req.user.id) {
+    console.log(post.ownerId + " MAKE " + req.user.id)
+    if (post && post.ownerId == req.user.id) {
         next();
-    } else
+    } else{
+
+    
+        console.log('EI OLLUT OMISTAJA')
         res.sendStatus(401);
+    }
 };
 
 // User Signup
@@ -73,13 +80,16 @@ app.post('/signup', (req, res) => {
     console.log('originaali salasana ' + req.body.password);
     const salt = bcrypt.genSaltSync(6);
     const hashedPassword = bcrypt.hashSync(req.body.password, salt)
+    console.log('hashattu salasana ' + hashedPassword);
 
     const newUser = { 
         username: req.body.username,
         password: hashedPassword
     }
+    const token = jwt.sign(newUser, secrets.jwtSignKey);
+    
     database.addUser(newUser);
-    res.sendStatus(201);
+    res.status(201).json({ token: token});
 })
 
 // User Login
@@ -107,7 +117,7 @@ app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => 
         location: req.body.location,
         images: req.body.images,
         price: req.body.price,
-        date: Date.now(),
+        date: new Date(Date.now()),
         deliveryType: req.body.deliveryType,
         contactInfo: req.body.contactInfo,
     }
@@ -134,6 +144,11 @@ app.get('/posts', (req, res) => {
 // Update a Post
 app.patch('/posts/:postId', [passport.authenticate('jwt', {session: false}), checkIfOwner], (req, res) => {
     const updatedProps = req.body;
+    const valid = validateUpdate(updatedProps);
+    if (!valid) {
+        res.sendStatus(400);
+        return;
+    }
     database.updatePostById(req.params.postId, updatedProps);
     res.status(200).send("Post updated successfully");
 });
@@ -149,6 +164,19 @@ app.delete('/posts/:postId', [passport.authenticate('jwt', {session: false}), ch
 //     res.json(database.getUsers());
 // })
 
-app.listen(port, () => {
-    console.log(`App running at http://localhost:${port}`)
-});
+
+let serverInstance = null;
+
+module.exports = {
+    start: function(){
+      serverInstance = app.listen(port, () => {
+        console.log(`Example app listening at http://localhost:${port}`)
+      })
+  
+    },
+    close: function(){
+      serverInstance.close();
+    }
+  }
+
+//module.exports.start();

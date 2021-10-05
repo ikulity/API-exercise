@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+// Validation
 const Ajv = require('ajv');
 const ajv = new Ajv();
 const postSchema = require('./schemas/post.schema.json');
@@ -151,6 +152,7 @@ app.patch('/posts/:postId', [passport.authenticate('jwt', {session: false}), che
     }
     database.updatePostById(req.params.postId, updatedProps);
     res.status(200).send("Post updated successfully");
+    // Respond with updated post??
 });
 
 // Delete a Post

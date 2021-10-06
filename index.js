@@ -54,26 +54,45 @@ passport.use(new JwtStrategy(options, (payload, done) => {
 
 const checkIfOwner = (req, res, next) => {
     const post = database.getPostById(req.params.postId)
-    console.log(post.ownerId + " MAKE " + req.user.id)
-    if (post && post.ownerId == req.user.id) {
+    if (!post)
+        res.status(404).send("Post not found");
+    else if (post.ownerId == req.user.id) {
         next();
-    } else{
-
-    
-        console.log('EI OLLUT OMISTAJA')
+    } else {
         res.sendStatus(401);
     }
 };
 
+const validator = (type) => {
+    return (req, res, next) => {
+        let errors = null;
+        // Validate with the selected validator
+        switch (type) {
+            case "user":
+                if (!validateUser(req.body)) { errors = validateUser.errors};
+                break;
+            case "post":
+                if (!validatePost(req.body)) { errors = validatePost.errors};
+                break;
+            case "postUpdate":
+                if (!validateUpdate(req.body)) { errors = validateUpdate.errors};
+                break;
+        }
+        if (errors) {
+            // console.log("Errors: " + JSON.stringify(errors, undefined, 2))
+
+            // Basic error message printing
+            res.status(400).send(errors[0].instancePath + " " + errors[0].message);
+        } else {
+            next();
+        }
+    }
+};
+
 // User Signup
-app.post('/signup', (req, res) => {
+app.post('/signup', validator("user"), (req, res) => {
     //rekisteröitymisessö tarkastatetaan onko jo olemassa kyseisellä
     //nimellä ja jos ei ole niin palautetaan avain
-    const valid = validateUser(req.body);
-    if (!valid) {
-        res.sendStatus(400);
-        return;
-    }
     if (database.getUserByName(req.body.username)) {
         res.status(409).send("User already exists");
         return;
@@ -104,12 +123,7 @@ app.post('/login', passport.authenticate('basic', {session: false}), (req, res) 
 })
 
 // Create a new Post
-app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => {
-    const valid = validatePost(req.body);
-    if (!valid) {
-        res.sendStatus(400);
-        return;
-    }
+app.post('/post', [passport.authenticate('jwt', {session: false}), validator("post")], (req, res) => {
     const newPost = {
         ownerId: req.user.id,
         title: req.body.title,
@@ -128,22 +142,16 @@ app.post('/post', passport.authenticate('jwt', {session: false}), (req, res) => 
 
 // Search Posts
 app.get('/posts', (req, res) => {
-    const criterias = {
-        category: req.query.category,
-        location: req.query.location,
-        ownerId: req.query.ownerId,
-        sortByDate: req.query.sortByDate,
-    }
-    let posts = database.getPostByCriteria(criterias);
-
-    if (req.query.sortByDate == "true")
-        res.json(database.sortPostsByDate(posts));
-    else
-        res.json(posts);
+    const criterias = {};
+    for (let param in req.query)
+        criterias[param] = req.query[param];
+    console.log(JSON.stringify(criterias, undefined, 2));
+    const posts = database.getPostByCriteria(criterias);
+    res.json(posts);
 });
 
 // Update a Post
-app.patch('/posts/:postId', [passport.authenticate('jwt', {session: false}), checkIfOwner], (req, res) => {
+app.patch('/posts/:postId', [passport.authenticate('jwt', {session: false}), validator("postUpdate"), checkIfOwner], (req, res) => {
     const updatedProps = req.body;
     const valid = validateUpdate(updatedProps);
     if (!valid) {

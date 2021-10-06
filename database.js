@@ -19,7 +19,7 @@ let posts = [
           "string"
         ],
         price: 0,
-        date: "2020-08-24",
+        date: "2021-10-06T08:35:23.003Z",
         deliveryType: "pickup",
         contactInfo: "Krisu, 04569569823"
       },
@@ -34,7 +34,7 @@ let posts = [
           "string"
         ],
         price: 0,
-        date: "2019-08-24",
+        date: "2021-10-02T08:35:23.003Z",
         deliveryType: "pickup",
         contactInfo: "Jukka, 05040569211"
       },
@@ -49,7 +49,7 @@ let posts = [
           "string"
         ],
         price: 0,
-        date: "2021-08-24",
+        date: "2021-10-11T08:35:23.003Z",
         deliveryType: "pickup",
         contactInfo: "Pirkko, 04036569283"
       }
@@ -71,21 +71,25 @@ module.exports = {
       const postWithId = { id: uuidv4(), ...post};
       posts.push(postWithId);
     },
-    // search posts
+    // Search posts
     getPostById: (postId) => posts.find(post => post.id == postId),
 
-    getPostByCriteria: (criteria) => posts.filter(criteriaCheck(criteria)),
-    
-    // sorting???
-    sortPostsByDate: (list) => list.sort((a, b) => {
-        console.log(new Date(a.date) + "  --  " +  new Date(b.date))
-        return new Date(b.date) - new Date(a.date);
-    }),
+    getPostByCriteria: (criteria) => {
+      let filteredPosts = posts.filter(criteriaCheck(criteria))
+      // Sorting
+      if (criteria.sortByDate != undefined) {
+        filteredPosts.sort((a, b) => {
+          const isTrueSet = (criteria.sortByDate === 'true');
+          return (new Date(b.date).getTime() / 1000 - new Date(a.date).getTime() / 1000) * (isTrueSet ? 1 : -1);
+        })
+      }
+      return filteredPosts;
+    },
 
+    // Modify posts
     updatePostById: (postId, updatedProps) => {
       const post = module.exports.getPostById(postId);
       const newPost = {...post, ...updatedProps};
-      console.log(JSON.stringify(newPost));
       module.exports.deletePostById(postId);
       posts.push(newPost);
     },
@@ -101,20 +105,17 @@ module.exports = {
 }
 
 const criteriaCheck = (criteria) => {
-    return (post) => {
-        console.log("\nComparing new post...")
-        let isValid = true;
-        for (let prop in criteria) {
-            if (prop == "sortByDate" || criteria[prop] == undefined) continue;
-            console.log("criteria[" + prop + "] = " + criteria[prop] + ", post[" + prop + "] = " + post[prop]);
-            if (post[prop] != criteria[prop]) {
-                isValid = false;
-                break;
-            }
-        }
-        isValid ? console.log("Valid post found!") : console.log("POST NOT FOUND >:(");
-        return isValid;
+  return (post) => {
+    let isValid = true;
+    for (let prop in criteria) {
+      if (prop == "sortByDate" || criteria[prop] == undefined) continue;
+      if (post[prop] != criteria[prop]) {
+        isValid = false;
+        break;
+      }
     }
+    return isValid;
+  }
 }
 
 /* 
